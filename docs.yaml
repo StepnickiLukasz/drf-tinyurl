@@ -1,0 +1,65 @@
+openapi: 3.0.0
+info:
+  title: TinyURL API docs
+  version: 1.0.0
+  description: API for creating and resolving short URLs
+servers:
+  - url: http://localhost:8000
+paths:
+  /api/tinyurl/:
+    post:
+      summary: Create short URL
+      description: Creates a new short URL from a provided original URL.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  example: "https://example.com/some-long-url"
+      responses:
+        "200":
+          description: Short URL created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  full_url:
+                    type: string
+                    example: "https://example.com/some-long-url"
+                  short_url:
+                    type: string
+                    example: "abc123"
+        "400":
+          description: Invalid input
+  /api/tinyurl/{short_url}/:
+    get:
+      summary: Get original URL by short URL
+      description: Resolves a short URL identifier.
+      parameters:
+        - name: short_url
+          in: path
+          required: true
+          description: Short URL identifier
+          schema:
+            type: string
+            example: "abc123"
+      responses:
+        "302":
+          description: Redirect to original URL
+          headers:
+            Location:
+              description: Redirect to long URL
+              schema:
+                type: string
+                format: uri
+                example: "https://example.com/very/long/url"
+        "404":
+          description: Short URL not found

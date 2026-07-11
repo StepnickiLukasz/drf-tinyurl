@@ -1,0 +1,83 @@
+services:
+
+  redis:
+    image: redis:8.6.4-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis:/data
+    networks:
+      - app
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    tty: true
+    command: sh -c "python tinyurl/manage.py collectstatic --noinput &&
+                    python tinyurl/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+      - statics:/app/static
+      - media:/app/media
+    ports:
+      - 8000:8000
+    environment:
+      - DEBUG=1
+    networks:
+      - app
+    depends_on:
+      - redis
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    command: >
+      sh -c "
+        isort --check-only . &&
+        flake8 . &&
+        coverage run tinyurl/manage.py test tiny_api &&
+        coverage report --fail-under=80
+      "
+    volumes:
+      - .:/app
+    networks:
+      - app
+    depends_on:
+      - redis
+
+  swagger:
+    image: swaggerapi/swagger-ui
+    environment:
+      SWAGGER_JSON: /docs.yaml
+    volumes:
+      - ./docs.yaml:/docs.yaml:ro
+    networks:
+      - app
+
+  nginx:
+    image: nginx:1.29.1-alpine
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - statics:/static
+      - media:/media
+      - ./docs.yaml:/etc/docs.yaml:ro
+    depends_on:
+      - web
+      - swagger
+    networks:
+      - app
+
+networks:
+  app:
+
+volumes:
+  redis:
+  statics:
+  media:
