@@ -105,7 +105,6 @@ REDIS_CONNECTIONS = {
         "REDIS_PORT": 6379,
         "REDIS_DB": 1,
         "KEY_EXPIRATION_TIME": None,  # set REDIS key expiration time (TTL) in seconds, Null means unexpired
-        "SHORTEN_SLUG_LENGTH": 10,  # defines how many URLs tha tinyurl app can handle in database
     }
 }
 
