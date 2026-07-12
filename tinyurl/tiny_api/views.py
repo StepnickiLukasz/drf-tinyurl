@@ -10,8 +10,7 @@ from tiny_api.managers import TinyUrlManager
 @api_view(['GET'])
 def get_full_url(request, short_url):
     manager = TinyUrlManager("tinyurl")
-    result = manager.get_full_url(short_url)
-    if result:
+    if result := manager.get_full_url(short_url):
         return HttpResponseRedirect(redirect_to=result)
     raise NotFound()
 
@@ -22,8 +21,7 @@ def set_short_url(request):
     if not full_url:
         raise ValidationError("full_url is required")
     manager = TinyUrlManager("tinyurl")
-    result = manager.set_short_url(full_url)
-    if result:
+    if result := manager.set_short_url(full_url):
         return Response({
             "short_url": result,
             "full_url": full_url,
